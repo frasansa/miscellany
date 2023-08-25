@@ -1,2 +1,2 @@
-# miscellany
-scripts and assets from various projects
+# Miscellany
+Scripts and assets from various projects.
