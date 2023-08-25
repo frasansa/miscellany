@@ -1,0 +1,80 @@
+---
+title: "Gantt Diagram"
+author: "Francisco Sanchez Saez"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Cargar librerías, funciones y Paths------------------------------------------
+# Cargar librerías, funciones y Paths------------------------------------------
+source(file.path("..", "Scripts", "Librerias.r"))
+source(file.path("..", "Scripts", "Funciones.r"))
+
+```
+
+# Data
+
+```{r}
+
+tasks <- tibble(task = c(
+  "Perform Quality Check system", 
+  "Write VE paper draft",
+  "ETL implementation of \n sample of CONSIGN",
+  "Write Causality paper draft \n for spanish journal",
+  "Analysis of COVID-19 Vaccines \n in pregnant women",
+  "Prepare causality class"),
+
+  start = c(
+  # Perform Quality Checks
+    ymd("2023-02-23"),
+    ymd("2023-02-27"),
+    ymd("2023-02-27"),
+    ymd("2023-03-06"),
+    ymd("2023-03-06"),
+    ymd("2023-03-07")
+    ),
+  end = c(
+    ymd("2023-03-15"),
+    ymd("2023-03-15"),
+    ymd("2023-03-24"),
+    ymd("2023-03-24"),
+    ymd("2023-03-31"),
+    ymd("2023-03-28")
+    )
+  )
+       
+tasks_long <- tasks |> 
+  pivot_longer(c(start, end), names_to = "type", values_to = "date")
+          
+```
+
+# Plot
+
+```{r fig.width = 8, fig.height = 3.5}
+tasks_long |>  ggplot() +
+  geom_line(mapping = aes(x = fct_rev(fct_inorder(task)), y = date), size = 10, color = "purple") +
+  geom_hline(yintercept = Sys.Date(), colour="black", linetype="dashed") +
+  coord_flip() +
+  scale_y_date(date_breaks = "1 week", date_labels = "%d %b") +
+  labs(title = "Tasks Gantt Chart",
+       x = "Task",
+       y = "Date") +
+  theme_bw(base_size = 15) +
+  theme(axis.text.x = element_text(angle = 0),
+        panel.grid.minor = element_line(colour = "white", size = 0.5),
+        legend.position = "right",
+        plot.title = element_text(hjust = 0.5))
+
+```
+
+```{r}
+
+ggsave(file.path("Results", glue("Gantt-{Sys.Date()}.pdf")), 
+       height = 6, width = 9)
+
+```
+
+
+<br>
