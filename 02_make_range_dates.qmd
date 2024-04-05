@@ -1,0 +1,48 @@
+---
+title: "MCC bootstrap"
+author: "Francisco Sanchez-Saez"
+date: "last-modified" 
+editor: source
+format:
+  html:
+    toc: true
+    toc-location: left
+    theme: cerulean
+    css: style.css
+    embed-resources: true
+    number-sections: true
+---
+
+```{r setup, include=FALSE, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# load libraries-------------------------------------------------------------
+library(lubridate)
+
+```
+
+# Dates and ranges tool
+
+IDEA: Hacer una herramienta interactiva que permita determinar las fechas de nacimiento a partir de unas fechas de inicio y de fin de estudio y unos rangos de edad.
+
+```{r}
+# check dates
+fecha_inicio_estudio  <- ymd("20140101")
+fecha_fin_estudio     <- ymd("20231231")
+fecha_nac_ini         <- ymd("20171231") 
+fecha_nac_final       <- ymd("19950101")
+
+(fecha_inicio_estudio - fecha_nac_final) / 365.25
+(fecha_fin_estudio - fecha_nac_ini) / 365.25
+
+
+
+rm(fecha_inicio_estudio,
+   fecha_fin_estudio,
+   fecha_nac_ini,
+   fecha_nac_final
+   )
+
+
+```
+
+

@@ -1,0 +1,172 @@
+---
+title: "Stats"
+editor: source
+---
+
+```{r setup, include=FALSE, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# Cargar librerías, funciones y Paths------------------------------------------
+source(file.path("..", "Scripts", "Librerias.R"))
+source(file.path("..", "Scripts", "Funciones.R"))
+
+```
+
+# Kaplan-Meier discontinuation
+
+------------------------------------------------------------------------
+
+```{r}
+# create simulate data--------------------------------------------------------
+persistence_data <- tibble(
+  id = 1:4,
+  time = c(6, 12, 12, 3),
+  status = c(1, 0, 0, 1)
+)
+
+```
+
+```{r}
+# fit the model---------------------------------------------------------------
+fit_km <- survfit(Surv(time, status) ~ 1, data = persistence_data)
+
+```
+
+```{r}
+# plot the KM------------------------------------------------------------------
+gg_surv2 <- ggsurvplot(fit_km, data = persistence_data, 
+           risk.table = FALSE,
+           conf.int = FALSE,
+           xlim = c(0, 12),
+           ylim = c(0, 100),
+           break.x.by = 1,
+           # palette = c(apt_color, 
+           #             oac_color, 
+           #             both_color),
+           ggtheme = theme_light() +
+           theme(plot.background = element_rect(fill = "white", colour = NA)),
+           xlab = "Months of Follow-Up", 
+           ylab = "Persistence (%)",
+           order.legend = TRUE,
+           fun = "pct",
+           legend = "none")
+           # legend.labs =c("APT", "OAC", "OAC + APT"),
+           # legend.title ="Treatment Group",
+           # fun = "event")
+
+```
+
+```{r, fig.height = 5, fig.width = 8}
+# componer figura--------------------------------------------------------------
+ggsave(file.path("Figures", "Fig_KM.svg"), height = 5, width = 8, units = "in")
+ggsave(file.path("Figures", "Fig_KM.tiff"), height = 5, width = 8, units = "in")
+ggsave(file.path("Figures", "Fig_KM.pdf"), height = 5, width = 8, units = "in")
+ggsave(file.path("Figures", "Fig_KM.jpg"), height = 5, width = 8, units = "in")
+ggsave(file.path("Figures", "Fig_KM.png"), height = 5, width = 8, units = "in")
+gg_surv2
+
+```
+
+# Risk measures
+
+------------------------------------------------------------------------
+
+We want to assess the differences between risk ratio and hazard ratio.
+
+```{r}
+# create simulated tibble-----------------------------------------------------
+risk_data <- tibble(
+  id = 1:20,
+  strata = c(rep("a", 10), rep("b", 10)),
+  time = c(
+  # a times
+    1, 1, 2, 2, 3, 12, 12, 12, 12, 12,
+  # b times
+    2, 2, 4, 4, 6, 12, 12, 12, 12, 12),
+  status = rep(c(1, 0, 1, 0), each = 5)
+)
+
+```
+
+```{r}
+# HR estimation---------------------------------------------------------------
+hazard_ratio_model <- coxph(Surv(time, status) ~ strata, data = risk_data)
+summary(hazard_ratio_model)
+
+```
+
+```{r}
+# RR estimation---------------------------------------------------------------
+estimate_risk_ratio <- function(analysis_tibble, strata, B = 500,
+                                # risk ratio per denominator (10,000) person
+                                denominator = 1e4){
+
+
+print(glue("The strata of interest is {strata}"))
+      
+ print(analysis_tibble %>% 
+             tabyl(strata, status) %>%
+             adorn_totals(where = c('row', 'col')) %>%
+             adorn_title())  
+
+ max_survtime <- analysis_tibble %>% 
+    summarise(max_survtime = as.numeric(max(time))) %>% pull()
+ 
+ fit <- survfit(Surv(time, status) ~ strata, data = analysis_tibble) 
+ 
+ s_strata_a <- Surv(analysis_tibble %>% 
+                      filter(strata == "a") %>% 
+                      pull(time), 
+                     analysis_tibble %>% 
+                      filter(strata == "a") %>% 
+                      pull(status))
+ boot_strata_a <- Hmisc::bootkm(s_strata_a, 
+                                 times = max_survtime, 
+                                 B = B) 
+ 
+ s_strata_b <- Surv(analysis_tibble %>% 
+                      filter(strata == "b") %>% 
+                      pull(time), 
+                     analysis_tibble %>% 
+                      filter(strata == "b") %>% 
+                      pull(status))
+ boot_strata_b <- Hmisc::bootkm(s_strata_b, 
+                                 times = max_survtime, 
+                                 B = B) 
+  
+ strata_a_events <- analysis_tibble %>% 
+    filter(strata == "a", status == 1) %>% nrow()
+ strata_a_risk <- (1 - fit$surv[length(fit$surv)/2]) * denominator
+  
+ strata_b_events <- analysis_tibble %>% 
+    filter(strata == "b", status == 1) %>% nrow()
+ strata_b_risk <- (1 - fit$surv[length(fit$surv)]) * denominator
+
+ point_estimate_rr <- 100 * (1 - (strata_b_risk/strata_a_risk))
+ 
+ qci <- quantile(100*(1-(1 - boot_strata_b)/(1 - boot_strata_a)), c(.025,.975), na.rm = TRUE)
+ point_estimate_rabs <- round(strata_b_risk - strata_a_risk)
+ qci2 <- quantile((1-boot_strata_a) * 1e4 - (1-boot_strata_b) * 1e4, c(.025,.975), na.rm = TRUE)
+ 
+ tibble(
+       group = strata, 
+       strata_a_events = strata_a_events,
+       strata_a_risk = round(strata_a_risk),
+       strata_b_events = strata_b_events,
+       strata_b_risk = round(strata_b_risk),
+       rr_eff = glue("{round(point_estimate_rr, 1)}% \\
+                     (95% CI {round(qci[1], 1)}-{round(qci[2], 1)})"), 
+       rabs_eff = glue("{round(point_estimate_rabs, 2)} \\
+                     ({round(qci2[1])}, {round(qci2[2])})"))
+ 
+} 
+ 
+```
+
+```{r}
+# estimate risk ratio---------------------------------------------------------
+estimate_risk_ratio(analysis_tibble = risk_data, 
+                    strata = strata, 
+                    B = 500,
+                    denominator = 1e4)
+
+```

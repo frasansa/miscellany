@@ -18,6 +18,7 @@
 # Output files from R CMD check
 /*.Rcheck/
 
+
 # RStudio files
 .Rproj.user/
 
@@ -48,3 +49,6 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .Rproj.user
+
+# Figures
+Figures/
