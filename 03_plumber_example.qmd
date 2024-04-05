@@ -16,26 +16,61 @@ format:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Introduction
+
 This example relies in the nice tutorial from Andrew Heiss: <https://www.andrewheiss.com/blog/2024/01/12/diy-api-plumber-quarto-ojs/_book/>
 
 First, the step in make <https://www.make.com/en> is done and the content of <https://www.goodreads.com/> is been copied to my [googledoc sheet](https://docs.google.com/spreadsheets/d/1xZEfjyxiH5SQQ-UYSyKN0UCA6lsd7twRsyzAAGGzn7o/edit#gid=0)
 
 Then, it is time to move to R.
 
+# Go direct
+
 ```{r}
+# retrieve directly the data-------------------------------------------------
 library(tidyverse)
 library(googlesheets4)
+
 gs4_deauth()  # The sheet is public so there's no need to log in
 local_gs4_quiet()  # Turn off the googlesheets messages
 
-books_raw <- read_sheet("https://docs.google.com/spreadsheets/d/1oQqX4G4CJaa7cgfsEW4LeorcQwxVeYe0Q83WrJbcN6Y/edit#gid=0")
+books_raw <- read_sheet("https://docs.google.com/spreadsheets/d/1xZEfjyxiH5SQQ-UYSyKN0UCA6lsd7twRsyzAAGGzn7o/edit#gid=0")
 
 last_five_books <- books_raw |> 
-  mutate(timestamp = dmy_hms(user_read_at)) |> 
+  mutate(timestamp = dmy_hms(user_date_created)) |> 
   arrange(desc(timestamp)) |> 
   select(timestamp, author_name, title) |> 
-  slice(1:5)
+  slice_head(n = 5)
+
 last_five_books
 
 ```
+
+# Go with plumber
+
+Now, we are doing the same through `plumber` using APIs.
+
+```{r}
+library(jsonlite)
+
+penguins_raw <- read_json(
+  "http://127.0.0.1:6312/penguins", 
+  # Automatically convert dataframe-like elements to data frames
+  simplifyVector = TRUE
+)
+
+penguins_raw$extra_details
+#> [1] "All missing values have been removed. You're welcome!"
+
+head(penguins_raw$data)
+#>   species    island bill_length_mm bill_depth_mm flipper_length_mm body_mass_g     sex year
+#> 1  Adelie Torgersen           39.1          18.7               181        3750    male 2007
+#> 2  Adelie Torgersen           39.5          17.4               186        3800  female 2007
+#> 3  Adelie Torgersen           40.3          18.0               195        3250  female 2007
+#> 4  Adelie Torgersen           36.7          19.3               193        3450  female 2007
+#> 5  Adelie Torgersen           39.3          20.6               190        3650    male 2007
+#> 6  Adelie Torgersen           38.9          17.8               181        3625  female 2007
+
+```
+
 
