@@ -1,5 +1,5 @@
 ---
-title: "Plumber exampel"
+title: "Plumber example"
 author: "Francisco Sanchez-Saez"
 date: "last-modified" 
 editor: source
@@ -16,22 +16,27 @@ format:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+This example relies in the nice tutorial from Andrew Heiss: <https://www.andrewheiss.com/blog/2024/01/12/diy-api-plumber-quarto-ojs/_book/>
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+First, the step in make <https://www.make.com/en> is done.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Then, it is time to move to R.
 
-```{r cars}
-summary(cars)
+```{r}
+library(tidyverse)
+library(googlesheets4)
+
+gs4_deauth()  # The sheet is public so there's no need to log in
+local_gs4_quiet()  # Turn off the googlesheets messages
+
+books_raw <- read_sheet("https://docs.google.com/spreadsheets/d/1oQqX4G4CJaa7cgfsEW4LeorcQwxVeYe0Q83WrJbcN6Y/edit#gid=0")
+
+last_five_books <- books_raw |> 
+  mutate(timestamp = dmy_hms(user_read_at)) |> 
+  arrange(desc(timestamp)) |> 
+  select(timestamp, author_name, title) |> 
+  slice(1:5)
+last_five_books
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
