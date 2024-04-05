@@ -52,3 +52,6 @@ rsconnect/
 
 # Figures
 Figures/
+
+# html files
+*.html
