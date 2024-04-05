@@ -18,14 +18,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This example relies in the nice tutorial from Andrew Heiss: <https://www.andrewheiss.com/blog/2024/01/12/diy-api-plumber-quarto-ojs/_book/>
 
-First, the step in make <https://www.make.com/en> is done.
+First, the step in make <https://www.make.com/en> is done and the content of <https://www.goodreads.com/> is been copied to my [googledoc sheet](https://docs.google.com/spreadsheets/d/1xZEfjyxiH5SQQ-UYSyKN0UCA6lsd7twRsyzAAGGzn7o/edit#gid=0)
 
 Then, it is time to move to R.
 
 ```{r}
 library(tidyverse)
 library(googlesheets4)
-
 gs4_deauth()  # The sheet is public so there's no need to log in
 local_gs4_quiet()  # Turn off the googlesheets messages
 
