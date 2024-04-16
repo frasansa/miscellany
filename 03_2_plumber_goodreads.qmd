@@ -46,74 +46,18 @@ last_five_books
 
 ```
 
-# Go with plumber
 
-Now, we are doing the same through `plumber` using APIs.
 
-```{r}
-library(jsonlite)
-
-```
-
-```{r}
-penguins_raw <- read_json(
-  # "http://127.0.0.1:6312/penguins", # probar desde casa
-  "https://api.andrewheiss.com/penguins",
-  # Automatically convert dataframe-like elements to data frames
-  simplifyVector = TRUE
-)
-
-penguins_raw$extra_details
-#> [1] "All missing values have been removed. You're welcome!"
-
-head(penguins_raw$data)
-#>   species    island bill_length_mm bill_depth_mm flipper_length_mm body_mass_g     sex year
-#> 1  Adelie Torgersen           39.1          18.7               181        3750    male 2007
-#> 2  Adelie Torgersen           39.5          17.4               186        3800  female 2007
-#> 3  Adelie Torgersen           40.3          18.0               195        3250  female 2007
-#> 4  Adelie Torgersen           36.7          19.3               193        3450  female 2007
-#> 5  Adelie Torgersen           39.3          20.6               190        3650    male 2007
-#> 6  Adelie Torgersen           38.9          17.8               181        3625  female 2007
-
-```
+# Go with obs
 
 ```{ojs}
 d3 = require('d3')
 
-penguins = await d3.json(
-  // This is my live API so it runs in your browser.
-  // Use your local API URL on your computer.
-  "http://127.0.0.1:6312/penguins"
-)
-
-penguins.extra_details
-
-```
-
-```{ojs}
-Plot.plot({
-  grid: true,
-  color: {legend: true},
-  marks: [
-    Plot.dot(penguins.data, {
-      x: "bill_depth_mm",
-      y: "body_mass_g",
-      fill: "species",
-      tip: true
-    })
-  ]
-})
-```
-
-# goodreads example
-
-```{ojs}
-d3_new = require('d3')
-
-books = await d3_new.json(
+books = await d3.json(
   // This is my live API so it runs in your browser.
   // Use your local API URL on your computer.
   "http://127.0.0.1:6312/books?year=2024"
+  //"https://api.andrewheiss.com/books_simple?year=2024"
 )
 
 Plot.plot({
@@ -145,5 +89,6 @@ Plot.plot({
     })
   ]
 })
+
 ```
 
