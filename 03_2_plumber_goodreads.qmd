@@ -92,3 +92,20 @@ Plot.plot({
 
 ```
 
+# Authentication
+
+
+```{ojs}
+//| eval: true
+d3new = require('d3')
+
+results = await d3new.json("http://127.0.0.1:6312/secret_data_better", {
+  body: JSON.stringify({username: "your_name2", password: "secret"}),
+  headers: {"content-type": "application/json"},
+  method: "POST"
+})
+
+results
+
+```
+

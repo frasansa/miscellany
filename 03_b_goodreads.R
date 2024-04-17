@@ -175,3 +175,17 @@ function(year = 2024) {
     )
   )
 }
+
+#* Slightly better secret thing
+#* @tag Authentication
+#* @seralizer text
+#* @post /secret_data_better
+function(username, password) {
+   if (username == "your_name2" & password == "secret") {
+    return("Here's some secret data")
+  } else {
+    api_error("Wrong username or password!", 401)
+  }
+}
+
+
