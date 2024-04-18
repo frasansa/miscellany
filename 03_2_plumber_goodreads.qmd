@@ -94,7 +94,6 @@ Plot.plot({
 
 # Authentication
 
-
 ```{ojs}
 //| eval: true
 d3new = require('d3')
